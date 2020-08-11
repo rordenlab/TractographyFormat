@@ -48,9 +48,9 @@ The number of OFFSETS corresponds to the number of STREAMLINES. An offset is rep
 
 ```
 # vtk DataFile Version 2.0
-Cube example
+simple example
 ASCII
-DATASET POLYDATA
+DATASET STREAMLINES
 POINTS 6 float 
 0.0 0.0 0.0
 1.0 0.0 0.0
@@ -76,6 +76,32 @@ TCK: 145.939ms to read 36763 streamlines stroke.tck
 TRK: 367.098ms to read 36763 streamlines stroke.trk
 ```
 
+## Reading TCK files quickly with Python
 
+[NiBabel](https://nipy.org/nibabel/manual.html) can read many file formats (including TCK), and uses its own internal format. However, it tends to be [quite slow](https://github.com/nipy/nibabel/issues/943) at reading large tractography files. In response, members of the [DiPy team](https://github.com/nipy/nibabel/issues/942) have suggested developing and supporting formats that allow the track separate arrays for vertex positions and streamline offsets (e.g. an arrays that track the first/last vertex associated with each streamline). This could also provide direct memory mapping to the file on disk. 
 
+A simple way to explore this while leveraging large existing datasets is to create generate the offsets for TCK files. This exploits the fact that the TCK format uses three values of the identical datatype for both the vertex position and the end-of-streamline signal. Therefore, the entire file can be mapped directly from disk as a Nx3 list of vertex positions. This trick would not work with the TCK format, where vertices are stored using three values, but embedded line length only uses a single entry.
+
+To demonstrate this, consider the 869Mb file that [Soichi Hayashi describes as having slow performance with NiBabel](https://github.com/nipy/nibabel/issues/943). This repository includes code for timing TCK loading using NiBabel (read_nibabel.py), Matlab (read_mrtrix_tracks.m) and a Python script that loads the vertices and generates line start/end information (read_mrtrix_tracks.py). These methods were tested on a Ryzen 3900X running Linux with 64Gb of RAM. The Matlab code required 7.7 seconds to load the TCK file.
+
+```
+./read_nibabel.py track.tck
+stroke.tck loaded in 33.43 seconds
+    
+./read_mrtrix_tracks.py track.tck
+track.tck loaded in 0.73 seconds
+streamlines 675000 vertices (72386074, 3)
+first line has 100 vertices X Y Z:
+ first [-11.223304 -56.063725 -25.203579]
+ final [-26.574024 -41.0987   -30.864029]
+```
+
+The Python script stores the vertices, offsets to line starts and offsets to line ends in NumPy arrays, using the approach described by [Tony Yu](https://tonysyu.github.io/ragged-arrays.html#.XzF73i2ZN0J). 
+
+## Related work
+
+In tractography, some streamlines often have fewer vertices than others. This situation is often referred to as "jagged arrays" or "ragged arrays".
+
+- [Tony Yu discussed usage of ragged arrays in Python](https://tonysyu.github.io/ragged-arrays.html#.XzF73i2ZN0J)
+- [netCDF provides VLEN Types for ragged arrays](https://www.unidata.ucar.edu/software/netcdf/docs/data_type.html)
 
