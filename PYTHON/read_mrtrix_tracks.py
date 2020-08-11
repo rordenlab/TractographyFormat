@@ -57,7 +57,7 @@ def read_mrtrix_streamlines(in_file, header):
         vtx[-1,:] = np.nan
     line_ends, = np.where(np.all(np.isnan(vtx), axis=1));
     if stream_count != line_ends.size:
-        print('expected {} streamlines, found {}'.format(stream_count, vtx_nans.size))
+        print('expected {} streamlines, found {}'.format(stream_count, line_ends.size))
     line_starts = line_ends + 0
     line_starts[1:line_ends.size] = line_ends[0:line_ends.size-1]
     #the first line starts with the first vertex (index 0), so preceding NaN at -1
