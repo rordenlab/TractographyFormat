@@ -37,9 +37,6 @@ def read_mrtrix_streamlines(in_file, header):
     byte_offset = header["offset"]
     stream_count = header["count"]
     datatype = header["datatype"]
-    if not datatype.startswith( 'Float32' ):
-        print('Unsupported datatype: ' + datatype)
-        return
     dt = 4
     if datatype.startswith( 'Float64' ):
         dt = 8
