@@ -78,15 +78,15 @@ TRK: 367.098ms to read 36763 streamlines stroke.trk
 
 ## Reading TCK files quickly with Python
 
-[NiBabel](https://nipy.org/nibabel/manual.html) can read many file formats (including TCK), and uses its own internal format. However, it tends to be [quite slow](https://github.com/nipy/nibabel/issues/943) at reading large tractography files. In response, members of the [DiPy team](https://github.com/nipy/nibabel/issues/942) have suggested developing and supporting formats that allow the track separate arrays for vertex positions and streamline offsets (e.g. an arrays that track the first/last vertex associated with each streamline). This could also provide direct memory mapping to the file on disk. 
+[NiBabel](https://nipy.org/nibabel/manual.html) can read many file formats (including TCK), and uses its own internal format. However, it tends to be [quite slow](https://github.com/nipy/nibabel/issues/943) at reading large tractography files. In response, members of the [DiPy team](https://github.com/nipy/nibabel/issues/942) have suggested developing and supporting formats that use separate arrays for vertex positions and streamline offsets (e.g. an arrays that track the first/last vertex associated with each streamline). This could provide direct memory mapping to the file on disk. 
 
-A simple way to explore this while leveraging large existing datasets is to create generate the offsets for TCK files. This exploits the fact that the TCK format uses three values of the identical datatype for both the vertex position and the end-of-streamline signal. Therefore, the entire file can be mapped directly from disk as a Nx3 list of vertex positions. This trick would not work with the TCK format, where vertices are stored using three values, but embedded line length only uses a single entry.
+A simple way to explore this while leveraging large existing datasets is to generate the streamline offsets for TCK files. This exploits the fact that the TCK format uses three values of the identical datatype for both the vertex position and the end-of-streamline signal. Therefore, the array can be mapped directly from disk as a Nx3 list of vertex positions. This trick would not work with the TCK format, where vertices are stored using three values, but embedded line length only uses a single entry.
 
 To demonstrate this, consider the 869Mb file that [Soichi Hayashi describes as having slow performance with NiBabel](https://github.com/nipy/nibabel/issues/943). This repository includes code for timing TCK loading using NiBabel (read_nibabel.py), Matlab (read_mrtrix_tracks.m) and a Python script that loads the vertices and generates line start/end information (read_mrtrix_tracks.py). These methods were tested on a Ryzen 3900X running Linux with 64Gb of RAM. The Matlab code required 7.7 seconds to load the TCK file.
 
 ```
 ./read_nibabel.py track.tck
-stroke.tck loaded in 33.43 seconds
+track.tck loaded in 33.43 seconds
     
 ./read_mrtrix_tracks.py track.tck
 track.tck loaded in 0.73 seconds
